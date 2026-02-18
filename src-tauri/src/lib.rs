@@ -1,4 +1,4 @@
-use tauri::Manager;
+use tauri::Emitter;
 use std::process::Command;
 use std::sync::Mutex;
 
