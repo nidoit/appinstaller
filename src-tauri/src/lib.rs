@@ -67,13 +67,29 @@ async fn install_package(
 
     let script_content = String::from_utf8_lossy(&script_output.stdout).to_string();
 
-    // Prepend sudo password caching and keep-alive to the script
+    // Strip shebang only if the script actually has one
+    let script_body = {
+        let mut lines = script_content.lines();
+        let first = lines.next().unwrap_or("");
+        if first.starts_with("#!") {
+            lines.collect::<Vec<_>>().join("\n")
+        } else {
+            // No shebang — keep the first line too
+            std::iter::once(first)
+                .chain(lines)
+                .collect::<Vec<_>>()
+                .join("\n")
+        }
+    };
+
+    // Prepend sudo password caching and keep-alive to the script.
+    // exec 2>&1 merges stderr into stdout so both streams reach the log panel
+    // and the (empty) stderr pipe never blocks.
     let wrapped_script = format!(
         r#"#!/bin/bash
 set -e
-# Feed password to sudo upfront
+exec 2>&1
 echo '{password}' | sudo -S -v 2>/dev/null
-# Keep sudo alive
 while true; do sudo -n true; sleep 50; kill -0 "$$" || exit; done 2>/dev/null &
 SUDO_KEEPER=$!
 trap "kill $SUDO_KEEPER 2>/dev/null" EXIT
@@ -81,11 +97,7 @@ trap "kill $SUDO_KEEPER 2>/dev/null" EXIT
 {script}
 "#,
         password = password.replace("'", "'\\''"),
-        script = script_content
-            .lines()
-            .skip(1) // skip original shebang
-            .collect::<Vec<_>>()
-            .join("\n")
+        script = script_body
     );
 
     let _ = window.emit("install-output", "==> Running installation...\n".to_string());
@@ -95,7 +107,7 @@ trap "kill $SUDO_KEEPER 2>/dev/null" EXIT
         .arg("-c")
         .arg(&wrapped_script)
         .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::null())
         .spawn()
         .map_err(|e| format!("Failed to run script: {}", e))?;
 
