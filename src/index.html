@@ -587,6 +587,7 @@
       }
     }
 
+    if (unlistenLog) { unlistenLog(); unlistenLog = null; }
     selected.clear();
     installing = false;
     logLive.classList.remove('active');
