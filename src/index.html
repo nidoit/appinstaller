@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blunux Installer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0d0f14;
+      --panel:    #13161d;
+      --border:   #1e2330;
+      --accent:   #00e5a0;
+      --accent2:  #0099ff;
+      --warn:     #ff6b35;
+      --text:     #c8d0e0;
+      --muted:    #4a5270;
+      --success:  #00e5a0;
+      --error:    #ff4757;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+
+    .auth-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .auth-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.3s;
+    }
+    .auth-dot.ok { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+    /* ── AUTH OVERLAY ── */
+    #auth-overlay {
+      position: fixed; inset: 0;
+      background: rgba(13,15,20,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      backdrop-filter: blur(4px);
+    }
+    .auth-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--accent);
+      padding: 40px 44px;
+      width: 380px;
+    }
+    .auth-card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .auth-card p {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+    .field label {
+      display: block;
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .field input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: var(--accent); }
+    .field input.error { border-color: var(--error); }
+
+    .auth-error {
+      font-size: 0.72rem;
+      color: var(--error);
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      margin-top: 24px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:active { transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── MAIN LAYOUT ── */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── PACKAGE GRID ── */
+    .packages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .section-title {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .pkg-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+      user-select: none;
+    }
+    .pkg-card:hover {
+      border-color: var(--muted);
+      background: #171b24;
+    }
+    .pkg-card.selected {
+      border-color: var(--accent);
+      background: rgba(0, 229, 160, 0.05);
+    }
+    .pkg-card.selected::before {
+      content: '✓';
+      position: absolute;
+      top: 8px; right: 10px;
+      font-size: 0.75rem;
+      color: var(--accent);
+    }
+    .pkg-card.installing {
+      border-color: var(--accent2);
+      animation: pulse-border 1s infinite;
+    }
+    .pkg-card.done { border-color: var(--success); }
+    .pkg-card.failed { border-color: var(--error); }
+
+    @keyframes pulse-border {
+      0%, 100% { border-color: var(--accent2); }
+      50% { border-color: rgba(0,153,255,0.3); }
+    }
+
+    .pkg-icon {
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .pkg-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .pkg-desc {
+      font-size: 0.65rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .pkg-status {
+      font-size: 0.6rem;
+      margin-top: 8px;
+      color: var(--muted);
+    }
+    .pkg-status.ok { color: var(--success); }
+    .pkg-status.err { color: var(--error); }
+    .pkg-status.running { color: var(--accent2); }
+
+    /* ── ACTION BAR ── */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+    }
+    .selected-count {
+      font-size: 0.72rem;
+      color: var(--muted);
+      flex: 1;
+    }
+    .selected-count strong { color: var(--accent); }
+
+    .btn-install {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 10px 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-install:hover { opacity: 0.85; }
+    .btn-install:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-clear {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-clear:hover { color: var(--text); border-color: var(--muted); }
+
+    /* ── LOG PANEL ── */
+    .log-panel {
+      width: 320px;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: #0a0c10;
+    }
+    .log-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .log-live {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+    .log-live.active {
+      background: var(--accent2);
+      box-shadow: 0 0 6px var(--accent2);
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    #log-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+      font-size: 0.68rem;
+      line-height: 1.7;
+      color: #6a7490;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    #log-output .line-ok   { color: var(--accent); }
+    #log-output .line-err  { color: var(--error); }
+    #log-output .line-info { color: var(--accent2); }
+    #log-output .line-warn { color: var(--warn); }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+  </style>
+</head>
+<body>
+
+<!-- Auth Overlay -->
+<div id="auth-overlay">
+  <div class="auth-card">
+    <h2>SUDO AUTHENTICATION</h2>
+    <p>Enter your sudo password once.<br>It will be cached for all installations this session.</p>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="sudo-password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <button class="btn-primary" id="auth-btn" onclick="authenticate()">UNLOCK</button>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="logo">BLU<span>NUX</span> INSTALLER</div>
+  <div class="auth-status">
+    <div class="auth-dot" id="auth-dot"></div>
+    <span id="auth-label">not authenticated</span>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="main">
+  <div class="packages">
+    <div class="section-title">Browsers &amp; Communication</div>
+    <div class="grid" id="grid-browsers"></div>
+
+    <div class="section-title">Productivity &amp; Office</div>
+    <div class="grid" id="grid-productivity"></div>
+
+    <div class="section-title">Development &amp; System</div>
+    <div class="grid" id="grid-dev"></div>
+
+    <div class="section-title">Input &amp; Localization</div>
+    <div class="grid" id="grid-input"></div>
+  </div>
+
+  <!-- Log Panel -->
+  <div class="log-panel">
+    <div class="log-header">
+      <span>INSTALL LOG</span>
+      <div class="log-live" id="log-live"></div>
+    </div>
+    <div id="log-output"><span style="color:#2a2f40">— waiting for installation —</span></div>
+  </div>
+</div>
+
+<!-- Action Bar -->
+<div class="action-bar">
+  <div class="selected-count">
+    <strong id="sel-count">0</strong> packages selected
+  </div>
+  <button class="btn-clear" onclick="clearSelection()">CLEAR</button>
+  <button class="btn-install" id="install-btn" disabled onclick="installSelected()">INSTALL SELECTED</button>
+</div>
+
+<script>
+  const { invoke, event } = window.__TAURI__;
+
+  // ── PACKAGE DEFINITIONS ──────────────────────────────────────────
+  const PACKAGES = {
+    'grid-browsers': [
+      { id: 'chrome',     name: 'Chrome',       desc: 'Google Chrome browser',          icon: '🌐', script: 'chrome.sh' },
+      { id: 'firefox',    name: 'Firefox',      desc: 'Mozilla Firefox browser',         icon: '🦊', script: 'firefox.sh' },
+      { id: 'teams',      name: 'MS Teams',     desc: 'Microsoft Teams client',          icon: '💼', script: 'teams.sh' },
+      { id: 'zoom',       name: 'Zoom',         desc: 'Video conferencing',              icon: '📹', script: 'zoom.sh' },
+    ],
+    'grid-productivity': [
+      { id: 'libreoffice', name: 'LibreOffice', desc: 'Full office suite',               icon: '📄', script: 'libreoffice.sh' },
+      { id: 'obsidian',   name: 'Obsidian',    desc: 'Markdown knowledge base',          icon: '🔮', script: 'obsidian.sh' },
+      { id: 'vlc',        name: 'VLC',         desc: 'Universal media player',           icon: '🎬', script: 'vlc.sh' },
+      { id: 'gimp',       name: 'GIMP',        desc: 'Image editor',                     icon: '🎨', script: 'gimp.sh' },
+    ],
+    'grid-dev': [
+      { id: 'vscode',     name: 'VS Code',     desc: 'Code editor by Microsoft',        icon: '⌨️', script: 'vscode.sh' },
+      { id: 'docker',     name: 'Docker',      desc: 'Container platform',               icon: '🐳', script: 'docker.sh' },
+      { id: 'julia',      name: 'Julia',       desc: 'Scientific computing language',    icon: '⚡', script: 'julia.sh' },
+      { id: 'yay',        name: 'yay',         desc: 'AUR helper for Arch Linux',        icon: '📦', script: 'yay.sh' },
+    ],
+    'grid-input': [
+      { id: 'kime',       name: 'KIME',        desc: 'Korean input method engine',       icon: '🇰🇷', script: 'kime.sh' },
+      { id: 'fonts-kr',   name: 'KR Fonts',   desc: 'Korean system fonts pack',         icon: '🔤', script: 'fonts-kr.sh' },
+      { id: 'nerd-fonts', name: 'Nerd Fonts', desc: 'Dev icon fonts (FiraCode)',         icon: '🖋️', script: 'nerd-fonts.sh' },
+    ],
+  };
+
+  // ── STATE ────────────────────────────────────────────────────────
+  let authenticated = false;
+  let selected = new Set();
+  let installing = false;
+  const cardStatus = {}; // id -> 'idle'|'installing'|'done'|'failed'
+
+  // ── BUILD UI ─────────────────────────────────────────────────────
+  for (const [gridId, pkgs] of Object.entries(PACKAGES)) {
+    const grid = document.getElementById(gridId);
+    pkgs.forEach(pkg => {
+      cardStatus[pkg.id] = 'idle';
+      const card = document.createElement('div');
+      card.className = 'pkg-card';
+      card.id = `card-${pkg.id}`;
+      card.innerHTML = `
+        <span class="pkg-icon">${pkg.icon}</span>
+        <div class="pkg-name">${pkg.name}</div>
+        <div class="pkg-desc">${pkg.desc}</div>
+        <div class="pkg-status" id="status-${pkg.id}"></div>
+      `;
+      card.onclick = () => togglePkg(pkg.id);
+      grid.appendChild(card);
+    });
+  }
+
+  function togglePkg(id) {
+    if (installing) return;
+    if (selected.has(id)) {
+      selected.delete(id);
+      document.getElementById(`card-${id}`).classList.remove('selected');
+    } else {
+      selected.add(id);
+      document.getElementById(`card-${id}`).classList.add('selected');
+    }
+    updateActionBar();
+  }
+
+  function clearSelection() {
+    selected.forEach(id => document.getElementById(`card-${id}`).classList.remove('selected'));
+    selected.clear();
+    updateActionBar();
+  }
+
+  function updateActionBar() {
+    document.getElementById('sel-count').textContent = selected.size;
+    const installBtn = document.getElementById('install-btn');
+    installBtn.disabled = selected.size === 0 || !authenticated || installing;
+  }
+
+  // ── AUTH ─────────────────────────────────────────────────────────
+  document.getElementById('sudo-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') authenticate();
+  });
+
+  async function authenticate() {
+    const input = document.getElementById('sudo-password');
+    const errEl = document.getElementById('auth-error');
+    const btn = document.getElementById('auth-btn');
+
+    const password = input.value;
+    if (!password) { errEl.textContent = 'Password required.'; return; }
+
+    btn.disabled = true;
+    btn.textContent = 'VERIFYING...';
+    errEl.textContent = '';
+    input.classList.remove('error');
+
+    try {
+      const ok = await invoke('verify_password', { password });
+      if (ok) {
+        document.getElementById('auth-overlay').style.display = 'none';
+        document.getElementById('auth-dot').classList.add('ok');
+        document.getElementById('auth-label').textContent = 'authenticated';
+        authenticated = true;
+        updateActionBar();
+      } else {
+        input.classList.add('error');
+        errEl.textContent = '✗ Incorrect password.';
+        btn.disabled = false;
+        btn.textContent = 'UNLOCK';
+        input.value = '';
+        input.focus();
+      }
+    } catch (e) {
+      errEl.textContent = `Error: ${e}`;
+      btn.disabled = false;
+      btn.textContent = 'UNLOCK';
+    }
+  }
+
+  // ── LOGGING ──────────────────────────────────────────────────────
+  const logEl = document.getElementById('log-output');
+  const logLive = document.getElementById('log-live');
+
+  function appendLog(text) {
+    const lines = text.split('\n');
+    lines.forEach(line => {
+      if (!line) return;
+      const span = document.createElement('span');
+      if (line.startsWith('✅') || line.startsWith('==> ') && line.includes('complete')) {
+        span.className = 'line-ok';
+      } else if (line.startsWith('✗') || line.toLowerCase().includes('error') || line.toLowerCase().includes('fail')) {
+        span.className = 'line-err';
+      } else if (line.startsWith('==>')) {
+        span.className = 'line-info';
+      } else if (line.startsWith('::') || line.startsWith('warning')) {
+        span.className = 'line-warn';
+      }
+      span.textContent = line + '\n';
+      logEl.appendChild(span);
+    });
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  // ── INSTALL ──────────────────────────────────────────────────────
+  // Build flat lookup: id -> script
+  const allPkgs = Object.values(PACKAGES).flat().reduce((acc, p) => {
+    acc[p.id] = p;
+    return acc;
+  }, {});
+
+  let unlistenLog = null;
+
+  async function installSelected() {
+    if (installing || selected.size === 0) return;
+    installing = true;
+
+    // Clear log
+    logEl.innerHTML = '';
+    logLive.classList.add('active');
+
+    // Setup log listener
+    if (unlistenLog) unlistenLog();
+    unlistenLog = await event.listen('install-output', e => {
+      appendLog(e.payload);
+    });
+
+    const queue = [...selected];
+    document.getElementById('install-btn').disabled = true;
+
+    for (const id of queue) {
+      const pkg = allPkgs[id];
+      const card = document.getElementById(`card-${id}`);
+      const statusEl = document.getElementById(`status-${id}`);
+
+      card.classList.remove('selected');
+      card.classList.add('installing');
+      statusEl.className = 'pkg-status running';
+      statusEl.textContent = '⟳ installing...';
+
+      appendLog(`\n── INSTALLING: ${pkg.name} ──\n`);
+
+      try {
+        await invoke('install_package', { scriptName: pkg.script });
+        card.classList.remove('installing');
+        card.classList.add('done');
+        statusEl.className = 'pkg-status ok';
+        statusEl.textContent = '✓ installed';
+      } catch (err) {
+        card.classList.remove('installing');
+        card.classList.add('failed');
+        statusEl.className = 'pkg-status err';
+        statusEl.textContent = '✗ failed';
+        appendLog(`\n✗ Error: ${err}\n`);
+      }
+    }
+
+    selected.clear();
+    installing = false;
+    logLive.classList.remove('active');
+    updateActionBar();
+    appendLog('\n── ALL DONE ──\n');
+  }
+</script>
+</body>
+</html>
