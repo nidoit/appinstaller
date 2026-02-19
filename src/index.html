@@ -357,18 +357,8 @@
 
 <!-- Main -->
 <div class="main">
-  <div class="packages">
-    <div class="section-title">Browsers &amp; Communication</div>
-    <div class="grid" id="grid-browsers"></div>
-
-    <div class="section-title">Productivity &amp; Office</div>
-    <div class="grid" id="grid-productivity"></div>
-
-    <div class="section-title">Development &amp; System</div>
-    <div class="grid" id="grid-dev"></div>
-
-    <div class="section-title">Input &amp; Localization</div>
-    <div class="grid" id="grid-input"></div>
+  <div class="packages" id="packages-container">
+    <!-- categories are generated dynamically from packages.toml -->
   </div>
 
   <!-- Log Panel -->
@@ -394,57 +384,47 @@
   const invoke = window.__TAURI__.core.invoke;
   const { listen } = window.__TAURI__.event;
 
-  // ── PACKAGE DEFINITIONS ──────────────────────────────────────────
-  const PACKAGES = {
-    'grid-browsers': [
-      { id: 'chrome',     name: 'Chrome',       desc: 'Google Chrome browser',          icon: '🌐', script: 'chrome.sh' },
-      { id: 'firefox',    name: 'Firefox',      desc: 'Mozilla Firefox browser',         icon: '🦊', script: 'firefox.sh' },
-      { id: 'teams',      name: 'MS Teams',     desc: 'Microsoft Teams client',          icon: '💼', script: 'teams.sh' },
-      { id: 'zoom',       name: 'Zoom',         desc: 'Video conferencing',              icon: '📹', script: 'zoom.sh' },
-    ],
-    'grid-productivity': [
-      { id: 'libreoffice', name: 'LibreOffice', desc: 'Full office suite',               icon: '📄', script: 'libreoffice.sh' },
-      { id: 'obsidian',   name: 'Obsidian',    desc: 'Markdown knowledge base',          icon: '🔮', script: 'obsidian.sh' },
-      { id: 'vlc',        name: 'VLC',         desc: 'Universal media player',           icon: '🎬', script: 'vlc.sh' },
-      { id: 'gimp',       name: 'GIMP',        desc: 'Image editor',                     icon: '🎨', script: 'gimp.sh' },
-    ],
-    'grid-dev': [
-      { id: 'vscode',     name: 'VS Code',     desc: 'Code editor by Microsoft',        icon: '⌨️', script: 'vscode.sh' },
-      { id: 'docker',     name: 'Docker',      desc: 'Container platform',               icon: '🐳', script: 'docker.sh' },
-      { id: 'julia',      name: 'Julia',       desc: 'Scientific computing language',    icon: '⚡', script: 'julia.sh' },
-      { id: 'yay',        name: 'yay',         desc: 'AUR helper for Arch Linux',        icon: '📦', script: 'yay.sh' },
-    ],
-    'grid-input': [
-      { id: 'kime',       name: 'KIME',        desc: 'Korean input method engine',       icon: '🇰🇷', script: 'kime.sh' },
-      { id: 'fonts-kr',   name: 'KR Fonts',   desc: 'Korean system fonts pack',         icon: '🔤', script: 'fonts-kr.sh' },
-      { id: 'nerd-fonts', name: 'Nerd Fonts', desc: 'Dev icon fonts (FiraCode)',         icon: '🖋️', script: 'nerd-fonts.sh' },
-    ],
-  };
-
   // ── STATE ────────────────────────────────────────────────────────
   let authenticated = false;
   let selected = new Set();
   let installing = false;
   const cardStatus = {}; // id -> 'idle'|'installing'|'done'|'failed'
+  let allPackages = [];  // flat list populated after loading
 
-  // ── BUILD UI ─────────────────────────────────────────────────────
-  for (const [gridId, pkgs] of Object.entries(PACKAGES)) {
-    const grid = document.getElementById(gridId);
-    pkgs.forEach(pkg => {
-      cardStatus[pkg.id] = 'idle';
-      const card = document.createElement('div');
-      card.className = 'pkg-card';
-      card.id = `card-${pkg.id}`;
-      card.innerHTML = `
-        <span class="pkg-icon">${pkg.icon}</span>
-        <div class="pkg-name">${pkg.name}</div>
-        <div class="pkg-desc">${pkg.desc}</div>
-        <div class="pkg-status" id="status-${pkg.id}"></div>
-      `;
-      card.onclick = () => togglePkg(pkg.id);
-      grid.appendChild(card);
+  // ── LOAD PACKAGES FROM TOML (via Rust backend) ─────────────────
+  async function loadPackages() {
+    const categories = await invoke('get_packages');
+    const container = document.getElementById('packages-container');
+    allPackages = [];
+
+    categories.forEach(cat => {
+      const title = document.createElement('div');
+      title.className = 'section-title';
+      title.textContent = cat.title;
+      container.appendChild(title);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      container.appendChild(grid);
+
+      cat.package.forEach(pkg => {
+        allPackages.push(pkg);
+        cardStatus[pkg.id] = 'idle';
+        const card = document.createElement('div');
+        card.className = 'pkg-card';
+        card.id = `card-${pkg.id}`;
+        card.innerHTML = `
+          <span class="pkg-icon">${pkg.icon}</span>
+          <div class="pkg-name">${pkg.name}</div>
+          <div class="pkg-desc">${pkg.desc}</div>
+          <div class="pkg-status" id="status-${pkg.id}"></div>
+        `;
+        card.onclick = () => togglePkg(pkg.id);
+        grid.appendChild(card);
+      });
     });
   }
+  loadPackages();
 
   function togglePkg(id) {
     if (installing) return;
@@ -536,11 +516,10 @@
   }
 
   // ── INSTALL ──────────────────────────────────────────────────────
-  // Build flat lookup: id -> script
-  const allPkgs = Object.values(PACKAGES).flat().reduce((acc, p) => {
-    acc[p.id] = p;
-    return acc;
-  }, {});
+  // Lookup helper: find package by id from loaded data
+  function getPkg(id) {
+    return allPackages.find(p => p.id === id);
+  }
 
   let unlistenLog = null;
 
@@ -562,7 +541,7 @@
     document.getElementById('install-btn').disabled = true;
 
     for (const id of queue) {
-      const pkg = allPkgs[id];
+      const pkg = getPkg(id);
       const card = document.getElementById(`card-${id}`);
       const statusEl = document.getElementById(`status-${id}`);
 

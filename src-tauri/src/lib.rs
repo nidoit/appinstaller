@@ -1,10 +1,38 @@
 use tauri::Emitter;
+use serde::Serialize;
 use std::process::Command;
 use std::sync::Mutex;
 
 // Store sudo password in app state (in-memory only, never persisted)
 struct SudoState {
     password: Mutex<Option<String>>,
+}
+
+#[derive(serde::Deserialize, Serialize, Clone)]
+struct PackageDef {
+    id: String,
+    name: String,
+    desc: String,
+    icon: String,
+    script: String,
+}
+
+#[derive(serde::Deserialize, Serialize, Clone)]
+struct Category {
+    title: String,
+    package: Vec<PackageDef>,
+}
+
+#[derive(serde::Deserialize)]
+struct PackagesFile {
+    category: Vec<Category>,
+}
+
+#[tauri::command]
+fn get_packages() -> Result<Vec<Category>, String> {
+    let toml_str = include_str!("../packages.toml");
+    let parsed: PackagesFile = toml::from_str(toml_str).map_err(|e| e.to_string())?;
+    Ok(parsed.category)
 }
 
 #[tauri::command]
@@ -139,7 +167,7 @@ pub fn run() {
         .manage(SudoState {
             password: Mutex::new(None),
         })
-        .invoke_handler(tauri::generate_handler![verify_password, install_package])
+        .invoke_handler(tauri::generate_handler![verify_password, install_package, get_packages])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
