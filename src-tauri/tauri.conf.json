@@ -25,21 +25,5 @@
     "active": true,
     "targets": "all",
     "icon": ["icons/icon.png"]
-  },
-  "plugins": {
-    "shell": {
-      "all": false,
-      "execute": true,
-      "sidecar": false,
-      "open": false,
-      "commands": {
-        "bash": {
-          "name": "bash",
-          "cmd": "bash",
-          "args": true,
-          "sidecar": false
-        }
-      }
-    }
   }
 }
