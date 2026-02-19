@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Blunux Installer",
+  "productName": "blunux-installer",
   "version": "0.1.0",
   "identifier": "com.jaewoo.blunux-installer",
   "build": {
@@ -23,7 +23,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["appimage"],
     "icon": ["icons/icon.png"]
   }
 }
