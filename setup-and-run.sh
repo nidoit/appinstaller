@@ -1,6 +1,6 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────
-#  Blunux Installer - Setup & Launch
+#  Blunux Installer - Build AppImage
 # ─────────────────────────────────────────────────────
 set -e
 
@@ -34,5 +34,23 @@ sudo pacman -S --needed --noconfirm \
 echo "==> Installing npm packages..."
 npm install
 
-echo "==> Launching Blunux Installer..."
-npm run dev
+echo "==> Building AppImage..."
+npx tauri build --bundles appimage
+
+# Find built AppImage
+APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" 2>/dev/null | head -1)
+
+echo ""
+echo "─────────────────────────────────────────────────────"
+if [ -n "$APPIMAGE" ]; then
+  echo "  Build complete!"
+  echo "  AppImage: $APPIMAGE"
+  echo ""
+  echo "  Run with:"
+  echo "    chmod +x \"$APPIMAGE\""
+  echo "    .\"/$APPIMAGE\""
+else
+  echo "  Build finished but AppImage not found."
+  echo "  Check: src-tauri/target/release/bundle/appimage/"
+fi
+echo "─────────────────────────────────────────────────────"
