@@ -29,7 +29,18 @@ sudo pacman -S --needed --noconfirm \
   openssl \
   appmenu-gtk-module \
   libayatana-appindicator \
-  librsvg 2>/dev/null || true
+  librsvg \
+  squashfs-tools \
+  fuse2 2>/dev/null || true
+
+# Check appimagetool (required by Tauri for AppImage bundling)
+if ! command -v appimagetool &>/dev/null; then
+  echo "==> Installing appimagetool..."
+  sudo wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
+    -O /usr/local/bin/appimagetool
+  sudo chmod +x /usr/local/bin/appimagetool
+  echo "    appimagetool installed at /usr/local/bin/appimagetool"
+fi
 
 echo "==> Installing npm packages..."
 npm install
