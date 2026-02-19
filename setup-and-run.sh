@@ -1,67 +1,77 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────
-#  Blunux Installer - Build AppImage
+#  Blunux Installer - Build pacman package
 # ─────────────────────────────────────────────────────
 set -e
 
-echo "==> Checking dependencies..."
+SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
+PKGNAME="blunux-installer"
+PKGVER="0.1.0"
 
-# Check Rust
-if ! command -v cargo &>/dev/null; then
-  echo "Installing Rust..."
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-  source "$HOME/.cargo/env"
+# ── Install yay if not present ──
+if ! command -v yay &>/dev/null; then
+    echo "==> Installing yay..."
+    YAYDIR=$(mktemp -d)
+    git clone https://aur.archlinux.org/yay-bin.git "$YAYDIR/yay-bin"
+    cd "$YAYDIR/yay-bin"
+    makepkg -si --noconfirm
+    cd "$SCRIPTDIR"
+    rm -rf "$YAYDIR"
 fi
 
-# Check Node
-if ! command -v node &>/dev/null; then
-  echo "ERROR: Node.js is required. Install with: yay -S nodejs npm"
-  exit 1
-fi
-
-# Check Tauri system deps (Arch/Blunux)
-echo "==> Installing Tauri system dependencies..."
+# ── Install build dependencies ──
+echo "==> Installing build dependencies..."
 sudo pacman -S --needed --noconfirm \
-  webkit2gtk-4.1 \
-  base-devel \
-  curl \
-  wget \
-  openssl \
-  appmenu-gtk-module \
-  libayatana-appindicator \
-  librsvg \
-  squashfs-tools \
-  fuse2 2>/dev/null || true
+    webkit2gtk-4.1 \
+    base-devel \
+    curl \
+    wget \
+    openssl \
+    appmenu-gtk-module \
+    libayatana-appindicator \
+    librsvg \
+    rust \
+    nodejs \
+    npm 2>/dev/null || true
 
-# Check appimagetool (required by Tauri for AppImage bundling)
-if ! command -v appimagetool &>/dev/null; then
-  echo "==> Installing appimagetool..."
-  sudo wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
-    -O /usr/local/bin/appimagetool
-  sudo chmod +x /usr/local/bin/appimagetool
-  echo "    appimagetool installed at /usr/local/bin/appimagetool"
-fi
+# ── Create build directory ──
+BUILDDIR=$(mktemp -d)
+echo "==> Build directory: $BUILDDIR"
 
-echo "==> Installing npm packages..."
-npm install
+# ── Create source tarball from local source ──
+echo "==> Creating source archive..."
+tar czf "$BUILDDIR/$PKGNAME-$PKGVER.tar.gz" \
+    --transform "s,^\\.,$PKGNAME-$PKGVER," \
+    --exclude='.git' \
+    --exclude='node_modules' \
+    --exclude='src-tauri/target' \
+    -C "$SCRIPTDIR" .
 
-echo "==> Building AppImage..."
-npx tauri build --bundles appimage
+# ── Copy PKGBUILD and build ──
+cp "$SCRIPTDIR/PKGBUILD" "$BUILDDIR/"
+cd "$BUILDDIR"
 
-# Find built AppImage
-APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" 2>/dev/null | head -1)
+echo "==> Building package with makepkg..."
+makepkg -sf --noconfirm
+
+# ── Show result ──
+PKG=$(find "$BUILDDIR" -maxdepth 1 -name "*.pkg.tar.*" -not -name "*.sig" | head -1)
 
 echo ""
 echo "─────────────────────────────────────────────────────"
-if [ -n "$APPIMAGE" ]; then
-  echo "  Build complete!"
-  echo "  AppImage: $APPIMAGE"
-  echo ""
-  echo "  Run with:"
-  echo "    chmod +x \"$APPIMAGE\""
-  echo "    .\"/$APPIMAGE\""
+if [ -n "$PKG" ]; then
+    cp "$PKG" "$SCRIPTDIR/"
+    PKGFILE="$SCRIPTDIR/$(basename "$PKG")"
+    echo "  Build complete!"
+    echo "  Package: $PKGFILE"
+    echo ""
+    echo "  Install with:"
+    echo "    sudo pacman -U \"$PKGFILE\""
+    echo ""
+    echo "  Then run:"
+    echo "    blunux-installer"
 else
-  echo "  Build finished but AppImage not found."
-  echo "  Check: src-tauri/target/release/bundle/appimage/"
+    echo "  Build finished but package not found."
+    echo "  Check: $BUILDDIR"
 fi
 echo "─────────────────────────────────────────────────────"
