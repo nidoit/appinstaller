@@ -391,7 +391,8 @@
 </div>
 
 <script>
-  const { invoke, event } = window.__TAURI__;
+  const invoke = window.__TAURI__.core.invoke;
+  const { listen } = window.__TAURI__.event;
 
   // ── PACKAGE DEFINITIONS ──────────────────────────────────────────
   const PACKAGES = {
@@ -553,7 +554,7 @@
 
     // Setup log listener
     if (unlistenLog) unlistenLog();
-    unlistenLog = await event.listen('install-output', e => {
+    unlistenLog = await listen('install-output', e => {
       appendLog(e.payload);
     });
 
