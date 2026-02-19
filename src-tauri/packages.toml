@@ -1,0 +1,116 @@
+[[category]]
+title = "Browsers & Communication"
+
+  [[category.package]]
+  id = "chrome"
+  name = "Chrome"
+  desc = "Google Chrome browser"
+  icon = "🌐"
+  script = "chrome.sh"
+
+  [[category.package]]
+  id = "firefox"
+  name = "Firefox"
+  desc = "Mozilla Firefox browser"
+  icon = "🦊"
+  script = "firefox.sh"
+
+  [[category.package]]
+  id = "teams"
+  name = "MS Teams"
+  desc = "Microsoft Teams client"
+  icon = "💼"
+  script = "teams.sh"
+
+  [[category.package]]
+  id = "zoom"
+  name = "Zoom"
+  desc = "Video conferencing"
+  icon = "📹"
+  script = "zoom.sh"
+
+[[category]]
+title = "Productivity & Office"
+
+  [[category.package]]
+  id = "libreoffice"
+  name = "LibreOffice"
+  desc = "Full office suite"
+  icon = "📄"
+  script = "libreoffice.sh"
+
+  [[category.package]]
+  id = "obsidian"
+  name = "Obsidian"
+  desc = "Markdown knowledge base"
+  icon = "🔮"
+  script = "obsidian.sh"
+
+  [[category.package]]
+  id = "vlc"
+  name = "VLC"
+  desc = "Universal media player"
+  icon = "🎬"
+  script = "vlc.sh"
+
+  [[category.package]]
+  id = "gimp"
+  name = "GIMP"
+  desc = "Image editor"
+  icon = "🎨"
+  script = "gimp.sh"
+
+[[category]]
+title = "Development & System"
+
+  [[category.package]]
+  id = "vscode"
+  name = "VS Code"
+  desc = "Code editor by Microsoft"
+  icon = "⌨️"
+  script = "vscode.sh"
+
+  [[category.package]]
+  id = "docker"
+  name = "Docker"
+  desc = "Container platform"
+  icon = "🐳"
+  script = "docker.sh"
+
+  [[category.package]]
+  id = "julia"
+  name = "Julia"
+  desc = "Scientific computing language"
+  icon = "⚡"
+  script = "julia.sh"
+
+  [[category.package]]
+  id = "yay"
+  name = "yay"
+  desc = "AUR helper for Arch Linux"
+  icon = "📦"
+  script = "yay.sh"
+
+[[category]]
+title = "Input & Localization"
+
+  [[category.package]]
+  id = "kime"
+  name = "KIME"
+  desc = "Korean input method engine"
+  icon = "🇰🇷"
+  script = "kime.sh"
+
+  [[category.package]]
+  id = "fonts-kr"
+  name = "KR Fonts"
+  desc = "Korean system fonts pack"
+  icon = "🔤"
+  script = "fonts-kr.sh"
+
+  [[category.package]]
+  id = "nerd-fonts"
+  name = "Nerd Fonts"
+  desc = "Dev icon fonts (FiraCode)"
+  icon = "🖋️"
+  script = "nerd-fonts.sh"
