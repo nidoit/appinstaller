@@ -48,6 +48,7 @@ title = "Browsers & Communication"
   desc = "Microsoft OneNote"
   icon = "📓"
   script = "onenote.sh"
+
 [[category]]
 title = "Productivity & Office"
   [[category.package]]
@@ -80,6 +81,7 @@ title = "Productivity & Office"
   desc = "System monitor overlay"
   icon = "📊"
   script = "conky.sh"
+
 [[category]]
 title = "Media & Entertainment"
   [[category.package]]
@@ -132,6 +134,27 @@ title = "Gaming"
   desc = "Open-source Civilization clone"
   icon = "🏛️"
   script = "unciv.sh"
+[[category]]
+title = "Gaming"
+  [[category.package]]
+  id = "steam"
+  name = "Steam"
+  desc = "Valve game platform"
+  icon = "🎮"
+  script = "steam.sh"
+  [[category.package]]
+  id = "snes9x"
+  name = "Snes9x"
+  desc = "SNES emulator"
+  icon = "🕹️"
+  script = "snes9x.sh"
+  [[category.package]]
+  id = "unciv"
+  name = "Unciv"
+  desc = "Open-source Civilization clone"
+  icon = "🏛️"
+  script = "unciv.sh"
+
 [[category]]
 title = "Development & System"
   [[category.package]]
@@ -200,6 +223,7 @@ title = "Development & System"
   desc = "YouTube & media downloader"
   icon = "⬇️"
   script = "ytdlp.sh"
+
 [[category]]
 title = "Network & Security"
   [[category.package]]
@@ -232,6 +256,7 @@ title = "Network & Security"
   desc = "Bluetooth stack & tools"
   icon = "🔵"
   script = "bluetooth.sh"
+
 [[category]]
 title = "Input & Localization"
   [[category.package]]
