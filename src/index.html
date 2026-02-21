@@ -47,7 +47,14 @@
       font-weight: 800;
       letter-spacing: -0.5px;
     }
-    .logo span { color: var(--accent); }
+    .logo .blu { color: #40c4ff; }
+    .logo .nux { color: var(--accent); }
+    .logo .installer {
+      background: linear-gradient(90deg, #ff4757, #ff6b35, #ffd000, #00e5a0, #40c4ff, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
     .auth-status {
       display: flex;
@@ -348,7 +355,7 @@
 
 <!-- Header -->
 <header>
-  <div class="logo">BLU<span>NUX</span> INSTALLER</div>
+  <div class="logo"><span class="blu">BLU</span><span class="nux">NUX</span> <span class="installer">INSTALLER</span></div>
   <div class="auth-status">
     <div class="auth-dot" id="auth-dot"></div>
     <span id="auth-label">not authenticated</span>
