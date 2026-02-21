@@ -133,8 +133,10 @@ chmod 700 "$_SD/askpass"
 export SUDO_ASKPASS="$_SD/askpass"
 
 # 3. Sudo shim: intercepts ALL sudo calls (including yay's internal ones)
-#    and forces -A so they all use the askpass helper above
-printf '#!/bin/bash\nexec /usr/bin/sudo -A "$@"\n' > "$_SD/sudo"
+#    -A  → use askpass helper (no TTY needed)
+#    -n  → non-interactive keep-alive; try real sudo cache, silently succeed
+#           if it fails (our wrapper's own keep-alive handles refresh)
+printf '#!/bin/bash\nif [[ " $* " == *" -n "* ]]; then\n  /usr/bin/sudo -n "$@" 2>/dev/null || true\nelse\n  exec /usr/bin/sudo -A "$@"\nfi\n' > "$_SD/sudo"
 chmod +x "$_SD/sudo"
 export PATH="$_SD:$PATH"
 
