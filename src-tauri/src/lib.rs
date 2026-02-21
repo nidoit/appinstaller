@@ -118,7 +118,7 @@ async fn install_package(
 set -e
 exec 2>&1
 echo '{password}' | sudo -S -v 2>/dev/null
-while true; do sudo -n true; sleep 50; kill -0 "$$" || exit; done 2>/dev/null &
+while true; do sleep 50; kill -0 "$$" || exit; echo '{password}' | sudo -S -v 2>/dev/null; done &
 SUDO_KEEPER=$!
 trap "kill $SUDO_KEEPER 2>/dev/null" EXIT
 
