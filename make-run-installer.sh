@@ -16,7 +16,10 @@
 #    Structure of blunux-installer.run:
 #      [bash header — finds + extracts payload, runs install.sh]
 #      __PAYLOAD_BELOW__
-#      [binary: tar.gz containing AppImage + icon + desktop + install.sh]
+#      [binary: tar.gz containing binary + icon + desktop + install.sh]
+#
+#  Note: Uses --no-bundle to produce a raw binary instead of an AppImage.
+#        This avoids the linuxdeploy/FUSE dependency entirely.
 # ─────────────────────────────────────────────────────────────────────────────
 set -e
 
@@ -39,36 +42,34 @@ sudo pacman -S --needed --noconfirm \
     appmenu-gtk-module \
     libayatana-appindicator \
     librsvg \
-    fuse2 \
     rust \
     nodejs \
     npm 2>/dev/null || true
 
-# ── Step 2: Build the Tauri AppImage ─────────────────────────────────────────
+# ── Step 2: Build the Tauri binary (no-bundle, avoids linuxdeploy/FUSE) ──────
 echo "==> Installing npm dependencies..."
 cd "$SCRIPTDIR"
 npm install
 
-echo "==> Building Tauri app (AppImage)..."
-npm run build
+echo "==> Building Tauri app (binary only, no AppImage)..."
+NO_STRIP=true npx tauri build --no-bundle
 
-# ── Step 3: Locate built AppImage ────────────────────────────────────────────
-APPIMAGE_PATH=$(find "$SCRIPTDIR/src-tauri/target/release/bundle/appimage" \
-    -name "*.AppImage" 2>/dev/null | head -1)
+# ── Step 3: Locate built binary ──────────────────────────────────────────────
+BINARY_PATH="$SCRIPTDIR/src-tauri/target/release/$APPNAME"
 
-if [ -z "$APPIMAGE_PATH" ]; then
-    echo "ERROR: AppImage not found. Check the build output above."
+if [ ! -f "$BINARY_PATH" ]; then
+    echo "ERROR: Binary not found at $BINARY_PATH. Check the build output above."
     exit 1
 fi
 
-echo "==> Found: $APPIMAGE_PATH"
+echo "==> Found: $BINARY_PATH"
 
 # ── Step 4: Assemble payload directory ───────────────────────────────────────
 PAYLOADDIR=$(mktemp -d /tmp/blunux-payload.XXXXXX)
 trap 'rm -rf "$PAYLOADDIR"' EXIT
 
 echo "==> Assembling payload..."
-cp "$APPIMAGE_PATH"                    "$PAYLOADDIR/$APPNAME.AppImage"
+cp "$BINARY_PATH"                        "$PAYLOADDIR/$APPNAME"
 cp "$SCRIPTDIR/src-tauri/icons/icon.png" "$PAYLOADDIR/icon.png"
 cp "$SCRIPTDIR/$APPNAME.desktop"       "$PAYLOADDIR/$APPNAME.desktop"
 cp "$SCRIPTDIR/install.sh"             "$PAYLOADDIR/install.sh"
@@ -167,7 +168,7 @@ echo "    ./blunux-installer.run"
 echo ""
 echo "  The installer will:"
 echo "    1. Extract itself to a temp directory"
-echo "    2. Install runtime dependencies (webkit2gtk, fuse2, ...)"
+echo "    2. Install runtime dependencies (webkit2gtk, ...)"
 echo "    3. Install the app to /opt/blunux-installer/"
 echo "    4. Create a symlink at /usr/local/bin/blunux-installer"
 echo "    5. Install the desktop entry and icon"

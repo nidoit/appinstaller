@@ -32,36 +32,33 @@ if command -v pacman &>/dev/null; then
     pacman -S --needed --noconfirm \
         webkit2gtk-4.1 \
         libayatana-appindicator \
-        librsvg \
-        fuse2 2>/dev/null || true
+        librsvg 2>/dev/null || true
 
 elif command -v apt-get &>/dev/null; then
     apt-get install -y --no-install-recommends \
         libwebkit2gtk-4.1-0 \
         libayatana-appindicator3-1 \
-        librsvg2-2 \
-        fuse 2>/dev/null || true
+        librsvg2-2 2>/dev/null || true
 
 elif command -v dnf &>/dev/null; then
     dnf install -y \
         webkit2gtk4.1 \
         libayatana-appindicator \
-        librsvg2 \
-        fuse 2>/dev/null || true
+        librsvg2 2>/dev/null || true
 else
     echo "  [warn] Could not detect package manager."
     echo "         Please ensure webkit2gtk-4.1, libayatana-appindicator,"
-    echo "         librsvg, and fuse are installed."
+    echo "         and librsvg are installed."
 fi
 
 # ── Install application ──────────────────────────────────────────────────────
 echo "==> Installing $APPNAME to $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
-cp "$PAYLOAD_DIR/$APPNAME.AppImage" "$INSTALL_DIR/$APPNAME.AppImage"
-chmod +x "$INSTALL_DIR/$APPNAME.AppImage"
+cp "$PAYLOAD_DIR/$APPNAME" "$INSTALL_DIR/$APPNAME"
+chmod +x "$INSTALL_DIR/$APPNAME"
 
 # Create symlink in PATH
-ln -sf "$INSTALL_DIR/$APPNAME.AppImage" "$BIN_LINK"
+ln -sf "$INSTALL_DIR/$APPNAME" "$BIN_LINK"
 
 # ── Install icon ─────────────────────────────────────────────────────────────
 if [ -f "$PAYLOAD_DIR/icon.png" ]; then
