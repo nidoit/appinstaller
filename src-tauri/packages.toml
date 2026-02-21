@@ -1,113 +1,251 @@
 [[category]]
 title = "Browsers & Communication"
-
   [[category.package]]
   id = "chrome"
   name = "Chrome"
   desc = "Google Chrome browser"
   icon = "🌐"
   script = "chrome.sh"
-
   [[category.package]]
   id = "firefox"
   name = "Firefox"
   desc = "Mozilla Firefox browser"
   icon = "🦊"
   script = "firefox.sh"
-
+  [[category.package]]
+  id = "whale"
+  name = "Whale"
+  desc = "Naver Whale browser"
+  icon = "🐋"
+  script = "whale.sh"
+  [[category.package]]
+  id = "mullvad"
+  name = "Mullvad Browser"
+  desc = "Privacy-focused browser by Mullvad & Tor Project"
+  icon = "🛡️"
+  script = "mullvad.sh"
   [[category.package]]
   id = "teams"
   name = "MS Teams"
   desc = "Microsoft Teams client"
   icon = "💼"
   script = "teams.sh"
-
   [[category.package]]
   id = "zoom"
   name = "Zoom"
   desc = "Video conferencing"
   icon = "📹"
   script = "zoom.sh"
-
+  [[category.package]]
+  id = "whatsapp"
+  name = "WhatsApp"
+  desc = "WhatsApp desktop client"
+  icon = "💬"
+  script = "whatsapp.sh"
+  [[category.package]]
+  id = "onenote"
+  name = "OneNote"
+  desc = "Microsoft OneNote"
+  icon = "📓"
+  script = "onenote.sh"
 [[category]]
 title = "Productivity & Office"
-
   [[category.package]]
   id = "libreoffice"
   name = "LibreOffice"
   desc = "Full office suite"
   icon = "📄"
   script = "libreoffice.sh"
-
+  [[category.package]]
+  id = "hoffice"
+  name = "Hancom Office"
+  desc = "Korean office suite (HWP)"
+  icon = "📝"
+  script = "hoffice.sh"
   [[category.package]]
   id = "obsidian"
   name = "Obsidian"
   desc = "Markdown knowledge base"
   icon = "🔮"
   script = "obsidian.sh"
-
+  [[category.package]]
+  id = "texlive"
+  name = "TeX Live"
+  desc = "LaTeX typesetting system"
+  icon = "📐"
+  script = "texlive.sh"
+  [[category.package]]
+  id = "conky"
+  name = "Conky"
+  desc = "System monitor overlay"
+  icon = "📊"
+  script = "conky.sh"
+[[category]]
+title = "Media & Entertainment"
   [[category.package]]
   id = "vlc"
   name = "VLC"
   desc = "Universal media player"
   icon = "🎬"
   script = "vlc.sh"
-
+  [[category.package]]
+  id = "freetube"
+  name = "FreeTube"
+  desc = "Private YouTube desktop client"
+  icon = "▶️"
+  script = "freetube.sh"
+  [[category.package]]
+  id = "freetv"
+  name = "FreeTV"
+  desc = "Free streaming TV player"
+  icon = "📺"
+  script = "freetv.sh"
+  [[category.package]]
+  id = "obs"
+  name = "OBS Studio"
+  desc = "Screen recording & streaming"
+  icon = "🎙️"
+  script = "obs.sh"
   [[category.package]]
   id = "gimp"
   name = "GIMP"
   desc = "Image editor"
   icon = "🎨"
   script = "gimp.sh"
-
+[[category]]
+title = "Gaming"
+  [[category.package]]
+  id = "steam"
+  name = "Steam"
+  desc = "Valve game platform"
+  icon = "🎮"
+  script = "steam.sh"
+  [[category.package]]
+  id = "snes9x"
+  name = "Snes9x"
+  desc = "SNES emulator"
+  icon = "🕹️"
+  script = "snes9x.sh"
+  [[category.package]]
+  id = "unciv"
+  name = "Unciv"
+  desc = "Open-source Civilization clone"
+  icon = "🏛️"
+  script = "unciv.sh"
 [[category]]
 title = "Development & System"
-
   [[category.package]]
   id = "vscode"
   name = "VS Code"
   desc = "Code editor by Microsoft"
   icon = "⌨️"
   script = "vscode.sh"
-
+  [[category.package]]
+  id = "sublime"
+  name = "Sublime Text"
+  desc = "Lightweight code editor"
+  icon = "✏️"
+  script = "sublime.sh"
   [[category.package]]
   id = "docker"
   name = "Docker"
   desc = "Container platform"
   icon = "🐳"
   script = "docker.sh"
-
+  [[category.package]]
+  id = "virtualbox"
+  name = "VirtualBox"
+  desc = "Virtual machine manager"
+  icon = "🖥️"
+  script = "virtualbox.sh"
   [[category.package]]
   id = "julia"
   name = "Julia"
   desc = "Scientific computing language"
   icon = "⚡"
   script = "julia.sh"
-
+  [[category.package]]
+  id = "nodejs"
+  name = "Node.js"
+  desc = "JavaScript runtime environment"
+  icon = "🟩"
+  script = "nodejs.sh"
+  [[category.package]]
+  id = "rust"
+  name = "Rust"
+  desc = "Systems programming language"
+  icon = "🦀"
+  script = "rust.sh"
+  [[category.package]]
+  id = "github_cli"
+  name = "GitHub CLI"
+  desc = "GitHub command line tool"
+  icon = "🐙"
+  script = "github_cli.sh"
   [[category.package]]
   id = "yay"
   name = "yay"
   desc = "AUR helper for Arch Linux"
   icon = "📦"
   script = "yay.sh"
-
+  [[category.package]]
+  id = "cronie"
+  name = "Cronie"
+  desc = "Cron daemon for task scheduling"
+  icon = "⏰"
+  script = "cronie.sh"
+  [[category.package]]
+  id = "ytdlp"
+  name = "yt-dlp"
+  desc = "YouTube & media downloader"
+  icon = "⬇️"
+  script = "ytdlp.sh"
+[[category]]
+title = "Network & Security"
+  [[category.package]]
+  id = "samba"
+  name = "Samba"
+  desc = "Windows file sharing (SMB)"
+  icon = "🗂️"
+  script = "samba.sh"
+  [[category.package]]
+  id = "transmissionremote"
+  name = "Transmission Remote"
+  desc = "Remote GUI for Transmission"
+  icon = "🔄"
+  script = "transmissionremote.sh"
+  [[category.package]]
+  id = "transmissionrmt"
+  name = "Transmission Daemon"
+  desc = "Headless torrent client daemon"
+  icon = "📡"
+  script = "transmissionrmt.sh"
+  [[category.package]]
+  id = "vnc"
+  name = "VNC Viewer"
+  desc = "Remote desktop client"
+  icon = "🖱️"
+  script = "vnc.sh"
+  [[category.package]]
+  id = "bluetooth"
+  name = "Bluetooth"
+  desc = "Bluetooth stack & tools"
+  icon = "🔵"
+  script = "bluetooth.sh"
 [[category]]
 title = "Input & Localization"
-
   [[category.package]]
   id = "kime"
   name = "KIME"
   desc = "Korean input method engine"
   icon = "🇰🇷"
   script = "kime.sh"
-
   [[category.package]]
   id = "fonts-kr"
   name = "KR Fonts"
   desc = "Korean system fonts pack"
   icon = "🔤"
   script = "fonts-kr.sh"
-
   [[category.package]]
   id = "nerd-fonts"
   name = "Nerd Fonts"
