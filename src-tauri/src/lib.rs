@@ -117,10 +117,34 @@ async fn install_package(
         r#"#!/bin/bash
 set -e
 exec 2>&1
-echo '{password}' | sudo -S -v 2>/dev/null
-while true; do sleep 50; kill -0 "$$" || exit; echo '{password}' | sudo -S -v 2>/dev/null; done &
-SUDO_KEEPER=$!
-trap "kill $SUDO_KEEPER 2>/dev/null" EXIT
+
+# ── Passwordless sudo shim ────────────────────────────────────────────────────
+# Create a private temp dir for the shim files
+_SD=$(mktemp -d /tmp/.sd.XXXXXX)
+chmod 700 "$_SD"
+
+# 1. Password file (readable only by this process)
+printf '%s\n' '{password}' > "$_SD/pw"
+chmod 600 "$_SD/pw"
+
+# 2. Askpass helper: sudo calls this instead of prompting a TTY
+printf '#!/bin/bash\ncat "%s/pw"\n' "$_SD" > "$_SD/askpass"
+chmod 700 "$_SD/askpass"
+export SUDO_ASKPASS="$_SD/askpass"
+
+# 3. Sudo shim: intercepts ALL sudo calls (including yay's internal ones)
+#    and forces -A so they all use the askpass helper above
+printf '#!/bin/bash\nexec /usr/bin/sudo -A "$@"\n' > "$_SD/sudo"
+chmod +x "$_SD/sudo"
+export PATH="$_SD:$PATH"
+
+# Validate password upfront (fails fast if wrong)
+/usr/bin/sudo -A -v
+
+# Keep sudo timestamp alive every 50 s
+while true; do sleep 50; kill -0 "$$" 2>/dev/null || exit; /usr/bin/sudo -A -v 2>/dev/null; done &
+trap "kill $! 2>/dev/null; rm -rf '$_SD'" EXIT
+# ─────────────────────────────────────────────────────────────────────────────
 
 {script}
 "#,
