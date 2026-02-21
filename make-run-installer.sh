@@ -71,9 +71,10 @@ trap 'rm -rf "$PAYLOADDIR"' EXIT
 echo "==> Assembling payload..."
 cp "$BINARY_PATH"                        "$PAYLOADDIR/$APPNAME"
 cp "$SCRIPTDIR/src-tauri/icons/icon.png" "$PAYLOADDIR/icon.png"
-cp "$SCRIPTDIR/$APPNAME.desktop"       "$PAYLOADDIR/$APPNAME.desktop"
-cp "$SCRIPTDIR/install.sh"             "$PAYLOADDIR/install.sh"
-chmod +x "$PAYLOADDIR/install.sh"
+cp "$SCRIPTDIR/$APPNAME.desktop"         "$PAYLOADDIR/$APPNAME.desktop"
+cp "$SCRIPTDIR/install.sh"               "$PAYLOADDIR/install.sh"
+cp "$SCRIPTDIR/uninstall.sh"             "$PAYLOADDIR/uninstall.sh"
+chmod +x "$PAYLOADDIR/install.sh" "$PAYLOADDIR/uninstall.sh"
 
 # ── Step 5: Create compressed payload tarball ─────────────────────────────────
 echo "==> Compressing payload..."
@@ -104,7 +105,23 @@ cat > "$OUTFILE" << 'RUN_HEADER'
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Blunux Installer"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "==> Extracting installer..."
+# ── Argument handling ────────────────────────────────────────────────────────
+UNINSTALL=0
+for arg in "$@"; do
+    case "$arg" in
+        --uninstall|-u) UNINSTALL=1 ;;
+        --help|-h)
+            echo "Usage: ./blunux-installer.run [options]"
+            echo ""
+            echo "  (no options)   Install the application"
+            echo "  --uninstall    Remove the application from this system"
+            echo "  --help         Show this help"
+            exit 0
+            ;;
+    esac
+done
+
+echo "==> Extracting..."
 
 # Locate the payload: the line immediately after __PAYLOAD_BELOW__
 SKIP=$(awk '/^__PAYLOAD_BELOW__$/{print NR + 1; exit}' "$0")
@@ -122,6 +139,19 @@ trap cleanup EXIT
 # Extract the binary payload (tail handles binary safely on GNU systems)
 tail -n +"$SKIP" "$0" | tar xz -C "$TMPDIR"
 
+if [ "$UNINSTALL" -eq 1 ]; then
+    # Run uninstaller from the installed location if present,
+    # otherwise fall back to the one in the payload
+    UNINST="/opt/blunux-installer/uninstall.sh"
+    if [ ! -f "$UNINST" ]; then
+        UNINST="$TMPDIR/uninstall.sh"
+    fi
+    chmod +x "$UNINST"
+    echo "==> Running uninstaller..."
+    "$UNINST"
+    exit $?
+fi
+
 if [ ! -f "$TMPDIR/install.sh" ]; then
     echo "ERROR: install.sh not found in extracted payload."
     exit 1
@@ -130,7 +160,7 @@ fi
 chmod +x "$TMPDIR/install.sh"
 
 echo "==> Running installer..."
-"$TMPDIR/install.sh" "$@"
+"$TMPDIR/install.sh"
 EXIT_CODE=$?
 
 exit $EXIT_CODE

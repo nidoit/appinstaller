@@ -57,6 +57,10 @@ mkdir -p "$INSTALL_DIR"
 cp "$PAYLOAD_DIR/$APPNAME" "$INSTALL_DIR/$APPNAME"
 chmod +x "$INSTALL_DIR/$APPNAME"
 
+# Install uninstall script alongside the app
+cp "$PAYLOAD_DIR/uninstall.sh" "$INSTALL_DIR/uninstall.sh"
+chmod +x "$INSTALL_DIR/uninstall.sh"
+
 # Create symlink in PATH
 ln -sf "$INSTALL_DIR/$APPNAME" "$BIN_LINK"
 
@@ -81,6 +85,9 @@ echo "  Installation complete!"
 echo ""
 echo "  Launch from terminal : $APPNAME"
 echo "  Or open from your application menu."
+echo ""
+echo "  To uninstall:"
+echo "    sudo $INSTALL_DIR/uninstall.sh"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # ── Launch as the original non-root user ─────────────────────────────────────
