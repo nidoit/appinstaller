@@ -115,7 +115,6 @@ async fn install_package(
     // and the (empty) stderr pipe never blocks.
     let wrapped_script = format!(
         r#"#!/bin/bash
-set -e
 exec 2>&1
 echo '{password}' | sudo -S -v 2>/dev/null
 while true; do sudo -n true; sleep 50; kill -0 "$$" || exit; done 2>/dev/null &
