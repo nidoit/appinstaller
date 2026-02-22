@@ -2,7 +2,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #  Blunux Installer - Uninstall Script
 #  Usage: sudo /opt/blunux-installer/uninstall.sh
-#         or: ./blunux-installer.run --uninstall
+#         or: ./blunux-appinst.run --uninstall
 # ─────────────────────────────────────────────────────────────────────────────
 set -e
 

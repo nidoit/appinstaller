@@ -4,7 +4,7 @@
 #
 #  Usage: bash make-run-installer.sh
 #
-#  Output: blunux-installer.run
+#  Output: blunux-appinst.run
 #          A single self-extracting executable — like VirtualBox's .run file.
 #          When an end-user runs it, it installs the app and launches it.
 #
@@ -13,7 +13,7 @@
 #    archive appended as binary data. The header extracts the archive into a
 #    temp directory, then runs install.sh from inside it.
 #
-#    Structure of blunux-installer.run:
+#    Structure of blunux-appinst.run:
 #      [bash header — finds + extracts payload, runs install.sh]
 #      __PAYLOAD_BELOW__
 #      [binary: tar.gz containing binary + icon + desktop + install.sh]
@@ -25,7 +25,8 @@ set -e
 
 SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
 APPNAME="blunux-installer"
-OUTFILE="$SCRIPTDIR/$APPNAME.run"
+RUNNAME="blunux-appinst"
+OUTFILE="$SCRIPTDIR/$RUNNAME.run"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Blunux Installer — Building .run installer"
@@ -94,8 +95,8 @@ cat > "$OUTFILE" << 'RUN_HEADER'
 #  Blunux Installer — Self-Extracting Installer
 #
 #  Usage:
-#    chmod +x blunux-installer.run
-#    ./blunux-installer.run
+#    chmod +x blunux-appinst.run
+#    ./blunux-appinst.run
 #
 #  This file is a shell script with a compressed archive appended after the
 #  __PAYLOAD_BELOW__ marker. Running it extracts the archive to a temp
@@ -111,7 +112,7 @@ for arg in "$@"; do
     case "$arg" in
         --uninstall|-u) UNINSTALL=1 ;;
         --help|-h)
-            echo "Usage: ./blunux-installer.run [options]"
+            echo "Usage: ./blunux-appinst.run [options]"
             echo ""
             echo "  (no options)   Install the application"
             echo "  --uninstall    Remove the application from this system"
@@ -190,11 +191,11 @@ echo ""
 echo "  Installer : $OUTFILE"
 echo "  Size      : $FILESIZE"
 echo ""
-echo "  Distribute blunux-installer.run to end users."
+echo "  Distribute blunux-appinst.run to end users."
 echo "  They install it with:"
 echo ""
-echo "    chmod +x blunux-installer.run"
-echo "    ./blunux-installer.run"
+echo "    chmod +x blunux-appinst.run"
+echo "    ./blunux-appinst.run"
 echo ""
 echo "  The installer will:"
 echo "    1. Extract itself to a temp directory"
